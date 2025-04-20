@@ -1,0 +1,21 @@
+name: 'Initialize job for hosted and self-hosted runner usage'
+description: Pre-fetch upload-artifact (if self-hosted) and checkout repo
+runs:
+  using: "composite"
+  steps:
+    - name: Pre-fetch upload-artifact action (self-hosted only) ⚙️
+      if: contains(runner.labels, 'self-hosted')
+      shell: bash
+      run: |
+        mkdir -p ~/.setup-actions
+        cd ~/.setup-actions
+        if [ ! -d "upload-artifact" ]; then
+          echo "Cloning upload-artifact@v4..."
+          git clone --depth=1 --branch v4 https://github.com/actions/upload-artifact.git upload-artifact
+          echo "✅ upload-artifact@v4 cloned manually!"
+        else
+          echo "✅ upload-artifact already fetched."
+        fi
+
+    - name: Checkout repo 📦
+      uses: actions/checkout@v4
