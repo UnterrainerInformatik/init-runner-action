@@ -7,15 +7,26 @@ runs:
       if: contains(runner.labels, 'self-hosted')
       shell: bash
       run: |
-        mkdir -p ~/.setup-actions
-        cd ~/.setup-actions
-        if [ ! -d "upload-artifact" ]; then
-          echo "Cloning upload-artifact@v4..."
-          git clone --depth=1 --branch v4 https://github.com/actions/upload-artifact.git upload-artifact
-          echo "✅ upload-artifact@v4 cloned manually!"
-        else
-          echo "✅ upload-artifact already fetched."
-        fi
+        # Define runner's internal _actions path
+        ACTIONS_PATH="$RUNNER_WORKSPACE/_actions/actions"
+        mkdir -p "$ACTIONS_PATH"
+
+        declare -A actions
+        actions["upload-artifact"]="v4"
+        actions["setup-node"]="v4"
+        actions["cache"]="v3"
+
+        for action in "${!actions[@]}"; do
+          version="${actions[$action]}"
+          target="$ACTIONS_PATH/$action/$version"
+          if [ ! -f "$target/action.yml" ]; then
+            echo "🔁 Pre-fetching $action@$version..."
+            mkdir -p "$target"
+            git clone --depth=1 --branch "$version" "https://github.com/actions/$action.git" "$target"
+          else
+            echo "✅ $action@$version already exists."
+          fi
+        done
 
     - name: Checkout repo 📦
       uses: actions/checkout@v4
