@@ -1,14 +1,21 @@
 name: 'Initialize job for hosted and self-hosted runner usage'
 description: Pre-fetch commonly used GitHub and UnterrainerInformatik actions for self-hosted runners
+
+inputs:
+  self_hosted:
+    description: 'Whether the runner is self-hosted or not'
+    required: false
+    default: 'false'
+
 runs:
   using: "composite"
   steps:
-  - name: Pre-fetch actions (forced output) ⚙️
-    shell: bash
-    run: |
+    - name: Pre-fetch actions (forced output) ⚙️
+      if: inputs.self_hosted == 'true'
+      shell: bash
+      run: |
         echo "📦 Pre-fetching actions (GitHub + UnterrainerInformatik)..."
 
-        # Simple list of actions (no associative arrays)
         GH_ACTIONS=(
           "actions/checkout@v4"
           "actions/upload-artifact@v4"
@@ -16,13 +23,6 @@ runs:
           "actions/setup-node@v4"
           "actions/setup-java@v4"
           "actions/cache@v3"
-        )
-
-        UNTER_ACTIONS=(
-          "UnterrainerInformatik/ssh-mkdir-action@v1"
-          "UnterrainerInformatik/ssh-deploy-action@v1"
-          "UnterrainerInformatik/ssh-run-action@v1"
-          "UnterrainerInformatik/init-runner-action@master"
         )
 
         BASE_PATH="$RUNNER_WORKSPACE/_actions"
@@ -47,8 +47,7 @@ runs:
           fi
         }
 
-        for entry in "${GH_ACTIONS[@]}"; do clone_action "$entry"; done
-        for entry in "${UNTER_ACTIONS[@]}"; do clone_action "$entry"; done
+        for entry in "${GH_ACTIONS[@]}"; do clone_action "$entry"; doney
 
-  - name: Checkout repo 📦
-    uses: actions/checkout@v4
+    - name: Checkout repo 📦
+      uses: actions/checkout@v4
