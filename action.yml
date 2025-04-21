@@ -1,5 +1,5 @@
 name: 'Initialize job for hosted and self-hosted runner usage'
-description: Pre-fetch commonly used GitHub and UnterrainerInformatik actions for self-hosted runners
+description: Pre-fetch commonly used GitHub actions for self-hosted runners
 
 inputs:
   self_hosted:
@@ -14,7 +14,7 @@ runs:
       if: inputs.self_hosted == 'true'
       shell: bash
       run: |
-        echo "📦 Pre-fetching actions (GitHub + UnterrainerInformatik)..."
+        echo "📦 Pre-fetching actions..."
 
         GH_ACTIONS=(
           "actions/checkout@v4"
