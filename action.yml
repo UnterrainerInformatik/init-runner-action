@@ -7,6 +7,9 @@ runs:
       if: contains(runner.labels, 'self-hosted')
       shell: bash
       run: |
+        set -x
+        exec > >(tee /dev/stdout) 2>&1
+        
         echo "📦 Pre-fetching actions for self-hosted runner..."
 
         BASE_PATH="$RUNNER_WORKSPACE/_actions"
