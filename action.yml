@@ -47,7 +47,7 @@ runs:
           fi
         }
 
-        for entry in "${GH_ACTIONS[@]}"; do clone_action "$entry"; doney
+        for entry in "${GH_ACTIONS[@]}"; do clone_action "$entry"; done
 
     - name: Checkout repo 📦
       uses: actions/checkout@v4
