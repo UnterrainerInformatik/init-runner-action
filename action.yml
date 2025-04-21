@@ -1,31 +1,53 @@
 name: 'Initialize job for hosted and self-hosted runner usage'
-description: Pre-fetch upload-artifact (if self-hosted) and checkout repo
+description: Pre-fetch commonly used GitHub and UnterrainerInformatik actions for self-hosted runners
 runs:
   using: "composite"
   steps:
-    - name: Pre-fetch upload-artifact action (self-hosted only) ⚙️
+    - name: Pre-fetch critical actions (self-hosted only) ⚙️
       if: contains(runner.labels, 'self-hosted')
       shell: bash
       run: |
-        # Define runner's internal _actions path
-        ACTIONS_PATH="$RUNNER_WORKSPACE/_actions/actions"
-        mkdir -p "$ACTIONS_PATH"
+        echo "📦 Pre-fetching actions for self-hosted runner..."
 
-        declare -A actions
-        actions["upload-artifact"]="v4"
-        actions["download-artifact"]="v4"
-        actions["setup-node"]="v4"
-        actions["cache"]="v3"
+        BASE_PATH="$RUNNER_WORKSPACE/_actions"
 
-        for action in "${!actions[@]}"; do
-          version="${actions[$action]}"
-          target="$ACTIONS_PATH/$action/$version"
+        declare -A gh_actions
+        gh_actions["actions/upload-artifact"]="v4"
+        gh_actions["actions/download-artifact"]="v4"
+        gh_actions["actions/setup-node"]="v4"
+        gh_actions["actions/cache"]="v3"
+
+        declare -A unterrainer_actions
+        unterrainer_actions["UnterrainerInformatik/ssh-mkdir-action"]="v1"
+        unterrainer_actions["UnterrainerInformatik/ssh-deploy-action"]="v1"
+        unterrainer_actions["UnterrainerInformatik/ssh-run-action"]="v1"
+        unterrainer_actions["UnterrainerInformatik/init-runner-action"]="master"
+
+        for repo in "${!gh_actions[@]}"; do
+          version="${gh_actions[$repo]}"
+          owner="$(dirname "$repo")"
+          name="$(basename "$repo")"
+          target="$BASE_PATH/$owner/$name/$version"
           if [ ! -f "$target/action.yml" ]; then
-            echo "🔁 Pre-fetching $action@$version..."
+            echo "🔁 Cloning $repo@$version..."
             mkdir -p "$target"
-            git clone --depth=1 --branch "$version" "https://github.com/actions/$action.git" "$target"
+            git clone --depth=1 --branch "$version" "https://github.com/$repo.git" "$target"
           else
-            echo "✅ $action@$version already exists."
+            echo "✅ $repo@$version already available."
+          fi
+        done
+
+        for repo in "${!unterrainer_actions[@]}"; do
+          version="${unterrainer_actions[$repo]}"
+          owner="$(dirname "$repo")"
+          name="$(basename "$repo")"
+          target="$BASE_PATH/$owner/$name/$version"
+          if [ ! -f "$target/action.yml" ]; then
+            echo "🔁 Cloning $repo@$version..."
+            mkdir -p "$target"
+            git clone --depth=1 --branch "$version" "https://github.com/$repo.git" "$target"
+          else
+            echo "✅ $repo@$version already available."
           fi
         done
 
