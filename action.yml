@@ -15,6 +15,7 @@ runs:
         gh_actions["actions/upload-artifact"]="v4"
         gh_actions["actions/download-artifact"]="v4"
         gh_actions["actions/setup-node"]="v4"
+        gh_actions["actions/setup-java"]="v4"
         gh_actions["actions/cache"]="v3"
 
         declare -A unterrainer_actions
