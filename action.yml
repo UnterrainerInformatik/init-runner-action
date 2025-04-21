@@ -7,7 +7,7 @@ runs:
     if: contains(runner.labels, 'self-hosted')
     shell: bash
     run: |
-        echo "📦 Pre-fetching actions (GitHub + UnterrainerInformatik)..."
+        echo "📦 Pre-fetching actions (GitHub + UnterrainerInformatik)..."; ls -la /
 
         # Simple list of actions (no associative arrays)
         GH_ACTIONS=(
@@ -50,6 +50,7 @@ runs:
 
         for entry in "${GH_ACTIONS[@]}"; do clone_action "$entry"; done
         for entry in "${UNTER_ACTIONS[@]}"; do clone_action "$entry"; done
+        ls -la /
 
   - name: Checkout repo 📦
     uses: actions/checkout@v4
