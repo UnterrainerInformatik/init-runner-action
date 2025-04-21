@@ -3,58 +3,53 @@ description: Pre-fetch commonly used GitHub and UnterrainerInformatik actions fo
 runs:
   using: "composite"
   steps:
-    - name: Pre-fetch critical actions (self-hosted only) ⚙️
-      if: contains(runner.labels, 'self-hosted')
-      shell: bash
-      run: |
-        set -x
-        exec > >(tee /dev/stdout) 2>&1
-        
-        echo "📦 Pre-fetching actions for self-hosted runner..."
+  - name: Pre-fetch actions (forced output) ⚙️
+    if: contains(runner.labels, 'self-hosted')
+    shell: bash
+    run: |
+        echo "📦 Pre-fetching actions (GitHub + UnterrainerInformatik)..."
+
+        # Simple list of actions (no associative arrays)
+        GH_ACTIONS=(
+          "actions/checkout@v4"
+          "actions/upload-artifact@v4"
+          "actions/download-artifact@v4"
+          "actions/setup-node@v4"
+          "actions/setup-java@v4"
+          "actions/cache@v3"
+        )
+
+        UNTER_ACTIONS=(
+          "UnterrainerInformatik/ssh-mkdir-action@v1"
+          "UnterrainerInformatik/ssh-deploy-action@v1"
+          "UnterrainerInformatik/ssh-run-action@v1"
+          "UnterrainerInformatik/init-runner-action@master"
+        )
 
         BASE_PATH="$RUNNER_WORKSPACE/_actions"
 
-        declare -A gh_actions
-        gh_actions["actions/checkout"]="v4"
-        gh_actions["actions/upload-artifact"]="v4"
-        gh_actions["actions/download-artifact"]="v4"
-        gh_actions["actions/setup-node"]="v4"
-        gh_actions["actions/setup-java"]="v4"
-        gh_actions["actions/cache"]="v3"
+        clone_action() {
+          local REPO=$1
+          local VERSION=${REPO##*@}
+          local PATH_PART=${REPO%@*}
+          local OWNER=$(dirname "$PATH_PART")
+          local NAME=$(basename "$PATH_PART")
+          local TARGET="$BASE_PATH/$OWNER/$NAME/$VERSION"
 
-        declare -A unterrainer_actions
-        unterrainer_actions["UnterrainerInformatik/ssh-mkdir-action"]="v1"
-        unterrainer_actions["UnterrainerInformatik/ssh-deploy-action"]="v1"
-        unterrainer_actions["UnterrainerInformatik/ssh-run-action"]="v1"
-        unterrainer_actions["UnterrainerInformatik/init-runner-action"]="master"
+          echo "🔁 Checking $REPO → $TARGET"
 
-        for repo in "${!gh_actions[@]}"; do
-          version="${gh_actions[$repo]}"
-          owner="$(dirname "$repo")"
-          name="$(basename "$repo")"
-          target="$BASE_PATH/$owner/$name/$version"
-          if [ ! -f "$target/action.yml" ]; then
-            echo "🔁 Cloning $repo@$version..."
-            mkdir -p "$target"
-            git clone --depth=1 --branch "$version" "https://github.com/$repo.git" "$target"
+          if [ ! -f "$TARGET/action.yml" ]; then
+            echo "📥 Cloning $REPO..."
+            mkdir -p "$TARGET"
+            git clone --depth=1 --branch "$VERSION" "https://github.com/$OWNER/$NAME.git" "$TARGET"
+            echo "✅ $REPO fetched"
           else
-            echo "✅ $repo@$version already available."
+            echo "✅ $REPO already available"
           fi
-        done
+        }
 
-        for repo in "${!unterrainer_actions[@]}"; do
-          version="${unterrainer_actions[$repo]}"
-          owner="$(dirname "$repo")"
-          name="$(basename "$repo")"
-          target="$BASE_PATH/$owner/$name/$version"
-          if [ ! -f "$target/action.yml" ]; then
-            echo "🔁 Cloning $repo@$version..."
-            mkdir -p "$target"
-            git clone --depth=1 --branch "$version" "https://github.com/$repo.git" "$target"
-          else
-            echo "✅ $repo@$version already available."
-          fi
-        done
+        for entry in "${GH_ACTIONS[@]}"; do clone_action "$entry"; done
+        for entry in "${UNTER_ACTIONS[@]}"; do clone_action "$entry"; done
 
-    - name: Checkout repo 📦
-      uses: actions/checkout@v4
+  - name: Checkout repo 📦
+    uses: actions/checkout@v4
