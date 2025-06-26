@@ -10,6 +10,10 @@ inputs:
 runs:
   using: "composite"
   steps:
+    - name: Debug - Print input self_hosted
+      shell: bash
+      run: echo "self_hosted = '${{ inputs.self_hosted }}'"
+
     - name: Pre-fetch actions (forced output) ⚙️
       if: inputs.self_hosted == 'true'
       shell: bash
