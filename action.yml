@@ -55,3 +55,5 @@ runs:
 
     - name: Checkout repo 📦
       uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
