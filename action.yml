@@ -11,7 +11,7 @@ runs:
   using: "composite"
   steps:
     - name: Pre-fetch actions (forced output) ⚙️
-      if: ${{ inputs.self_hosted == 'true' }}
+      if: inputs.self_hosted == 'true'
       shell: bash
       run: |
         echo "📦 Pre-fetching actions..."
