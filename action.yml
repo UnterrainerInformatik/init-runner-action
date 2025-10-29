@@ -53,17 +53,6 @@ runs:
 
         for entry in "${GH_ACTIONS[@]}"; do clone_action "$entry"; done
 
-    - name: Reset Git state (deep clean)
-      shell: bash
-      if: inputs.self_hosted == 'true'
-      run: |
-        echo "🧹 Cleaning all Git caches..."
-        # Lösche alte temporäre Git-Daten
-        sudo rm -rf /tmp/runner/work/_temp/_github_* || true
-        sudo rm -rf "$RUNNER_WORKSPACE/_actions" || true
-        sudo rm -rf "$RUNNER_WORKSPACE/${{ github.repository }}" || true
-        sudo git gc --prune=now || true
-
     - name: Checkout repo 📦
       uses: actions/checkout@v4
       with:
