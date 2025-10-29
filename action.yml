@@ -53,6 +53,12 @@ runs:
 
         for entry in "${GH_ACTIONS[@]}"; do clone_action "$entry"; done
 
+    - name: Clean workspace
+      if: inputs.self_hosted == 'true'
+      run: |
+        echo "🧹 Cleaning workspace..."
+        sudo rm -rf "$RUNNER_WORKSPACE/${{ github.repository }}" || true
+
     - name: Checkout repo 📦
       uses: actions/checkout@v4
       with:
