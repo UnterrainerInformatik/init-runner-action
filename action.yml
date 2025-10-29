@@ -55,6 +55,7 @@ runs:
 
     - name: Clean workspace
       if: inputs.self_hosted == 'true'
+      shell: bash
       run: |
         echo "🧹 Cleaning workspace..."
         sudo rm -rf "$RUNNER_WORKSPACE/${{ github.repository }}" || true
